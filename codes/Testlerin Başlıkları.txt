@@ -1,0 +1,53 @@
+# TC001: Note Olusturma
+# TC002: Note Guncelleme
+# TC003: Note Silme
+# TC004: Etiket Ekleme
+# TC005: Etiket Kaldirma
+# TC006: Markdown Formatinda Disa Aktarma
+# TC007: PDF Formatinda Disa Aktarma
+# TC008: Note Arama
+# TC009: Notlari Siralama
+# TC010: Cop Kutusundan Geri Yukleme
+# TC011: Notu favorilere ekleme
+# TC012: Notu favorilerden cikarma
+# TC013: Notu sifre korumali hale getirme
+# TC014: Uygulama Baslangic Suresi
+# TC015: Not Kaydetme Suresi
+# TC016: Arama Sonuc Hizi
+# TC017: Buyuk Notlari Yukleme
+# TC018: Coklu Not Yukleme
+# TC019: Senkronizasyon Suresi
+# TC020: Mobil Performans
+# TC021: Uygulama CPU Kullanımı
+# TC022: Uygulama Bellek Kullanımı
+# TC023: Hatali Sifre Girisi
+# TC024: SQL Enjeksiyonu Korumasi
+# TC025: Bos Sifre Uyarisinin Goruntulenmesi
+# TC026: XSS Korumasi
+# TC027: Oturum Suresi
+# TC028: Sifreleme Kontrolu
+# TC029: Yetkisiz Erisim
+# TC030: Guvenlik Gunluklerinin Dogrulanmasi
+# TC031: Senkronizasyon Guvenligi
+# TC032: Dogrulama Mesaji
+// TC033 kaynak ve not kimliklerini bulunabilkcegini test eder
+// TC034 birbirine bağlı itemlar bulunabilmeli
+// TC035 notların tipi değiştirilebilmeli
+// TC036 veriler bozulmadan json formatına serialize-deserialize yapılabilmeli
+// TC037 not duplike olduysa üretilirken alanlar silinmeli
+// TC038 birbirinden farklı tag'i bulunan notlar duplike olabilmeli
+// TC039 bir not duplike edilirken o nota ait kaynaklar de duplike edilmeli
+// TC040 bir not yanlışlıkla diğer benzer not yerine silinmemeli
+// TC041 conflict varsa dosyaya taşıma işlemi yapmamalı
+// TC042 conflict varsa dosyaya taşıma işlemi yapmamalı (copy - ana kaynağı silmez)
+// TC043 lokal olarak verilen adresler internet adreslerine dönüşmemeli
+// TC044 notlar oluşturulduğu halde bile doğal olarak alfebatik olarak sıralanmalı
+// TC045 çakışma olduğunda uyarı vermeil
+// TC046 onay verilmesi halinde çakışan not yeni klasöre taşınmalı ve o klasördeki eski not silinmeli
+# TC047: Uygulama Arayüzünde Menü Gezintisi
+# TC048: Yeni Kullanıcı İçin İlk Kullanım Rehberi
+# TC049: Not Düzenleme Kolaylığı
+# TC050: Temel Kısayol Tuşlarının Çalışması
+# TC051: Tema Değişikliği
+# TC052: Çoklu Dil Desteği
+# TC053: Mobil Cihazlarda Dokunmatik Destek
