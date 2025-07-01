@@ -95,7 +95,7 @@ All modules are exposed via a local REST API consumed by the Electron/React desk
 
 ```bash
 # Clone the repository
-git clone https://github.com/your‑org/joplin.git
+git clone https://github.com/laurent22/joplin.git
 cd joplin
 
 # Install dependencies
