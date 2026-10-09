@@ -1,9 +1,8 @@
 import time
-import requests
+from joplin_api import JoplinTestClient
 import psutil
 
-BASE_URL = "http://localhost:41184"
-TOKEN = "08a64ca62261a0db5150e84650c1f6dfe81d8b25b88983f2e828d696bf1c4b59079fdc93109c97c56a6111e2787782750f826c0a22f18792c84774457e90b5a3"
+api = JoplinTestClient()
 
 test_results = []
 
@@ -20,7 +19,7 @@ def log_result(test_id, description, success):
 def test_application_start_time():
     try:
         start_time = time.time()
-        response = requests.get(f"{BASE_URL}/ping") 
+        response = api.get("/ping")
         end_time = time.time()
         duration = end_time - start_time
         if response.status_code == 200 and duration <= 3:
@@ -34,7 +33,7 @@ def test_application_start_time():
 def test_note_save_time():
     try:
         start_time = time.time()
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": "Performance Test Note",
             "body": "Bu bir performans testidir."
         })
@@ -51,7 +50,7 @@ def test_note_save_time():
 def test_search_response_time():
     try:
         start_time = time.time()
-        response = requests.get(f"{BASE_URL}/search?query=Performance&token={TOKEN}")
+        response = api.get("/search", params={"query": "Performance"})
         end_time = time.time()
         duration = end_time - start_time
         if response.status_code == 200 and duration <= 3:
@@ -65,14 +64,14 @@ def test_search_response_time():
 def test_large_note_loading():
     try:
         note_body = "Lorem Ipsum " * 10000 
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": "Large Note",
             "body": note_body
         })
         if response.status_code == 200:
             note_id = response.json()["id"]
             start_time = time.time()
-            load_response = requests.get(f"{BASE_URL}/notes/{note_id}?token={TOKEN}")
+            load_response = api.get(f"/notes/{note_id}")
             end_time = time.time()
             duration = end_time - start_time
             if load_response.status_code == 200 and duration <= 3:
@@ -88,12 +87,12 @@ def test_large_note_loading():
 def test_multiple_note_loading():
     try:
         for i in range(50):
-            requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+            api.post("/notes", json={
                 "title": f"Test Note {i}",
                 "body": f"Bu Test Note {i} icin."
             })
         start_time = time.time()
-        response = requests.get(f"{BASE_URL}/notes?token={TOKEN}")
+        response = api.get("/notes")
         end_time = time.time()
         duration = end_time - start_time
         if response.status_code == 200 and duration <= 3:
@@ -107,7 +106,7 @@ def test_multiple_note_loading():
 def test_sync_time():
     try:
         start_time = time.time()
-        response = requests.post(f"{BASE_URL}/sync?token={TOKEN}")
+        response = api.post("/sync")
         end_time = time.time()
         duration = end_time - start_time
         if response.status_code == 200 and duration <= 5:
@@ -121,7 +120,7 @@ def test_sync_time():
 def test_mobile_performance():
     try:
         start_time = time.time()
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": "Mobile Test Note",
             "body": "Bu bir mobil performans testidir."
         })
@@ -136,7 +135,7 @@ def test_mobile_performance():
 
 def create_note():
     try:
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": "Test Note",
             "body": "Bu bir test notudur."
         })

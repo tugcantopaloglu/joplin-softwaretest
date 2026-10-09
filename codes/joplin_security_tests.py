@@ -1,8 +1,7 @@
-import requests
+from joplin_api import JoplinTestClient
 import time
 
-BASE_URL = "http://localhost:41184"
-TOKEN = "08a64ca62261a0db5150e84650c1f6dfe81d8b25b88983f2e828d696bf1c4b59079fdc93109c97c56a6111e2787782750f826c0a22f18792c84774457e90b5a3"
+api = JoplinTestClient()
 
 test_results = []
 
@@ -19,7 +18,7 @@ def log_result(test_id, description, success):
 # TC023: Hatali Sifre Girisi
 def test_incorrect_password():
     try:
-        response = requests.post(f"{BASE_URL}/auth", json={
+        response = api.post("/auth", json={
             "username": "testuser",
             "password": "truepassword"
         })
@@ -34,7 +33,7 @@ def test_incorrect_password():
 def test_sql_injection():
     try:
         malicious_payload = "' OR '1'='1"
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": malicious_payload,
             "body": "SQL injection test"
         })
@@ -48,7 +47,7 @@ def test_sql_injection():
 # TC025: Bos Sifre Uyarisinin Goruntulenmesi
 def test_empty_password():
     try:
-        response = requests.post(f"{BASE_URL}/auth", json={
+        response = api.post("/auth", json={
             "username": "testuser",
             "password": ""
         })
@@ -63,7 +62,7 @@ def test_empty_password():
 def test_xss_protection():
     try:
         malicious_script = "<script>alert('XSS');</script>"
-        response = requests.post(f"{BASE_URL}/notes?token={TOKEN}", json={
+        response = api.post("/notes", json={
             "title": "XSS Test",
             "body": malicious_script
         })
@@ -78,7 +77,7 @@ def test_xss_protection():
 def test_session_timeout():
     try:
         time.sleep(900)  # 15 dakika sürüyor
-        response = requests.get(f"{BASE_URL}/notes?token={TOKEN}")
+        response = api.get("/notes")
         if response.status_code == 401:
             log_result("TC027", "Oturum suresi doldu", True)
         else:
@@ -89,7 +88,7 @@ def test_session_timeout():
 # TC028: Sifreleme Kontrolu
 def test_encryption():
     try:
-        response = requests.get(f"{BASE_URL}/notes?token={TOKEN}")
+        response = api.get("/notes")
         if response.status_code == 200 and "encrypted" in response.text:
             log_result("TC028", "Sifreleme kontrolu basarili", True)
         else:
@@ -100,7 +99,7 @@ def test_encryption():
 # TC029: Yetkisiz Erisim
 def test_unauthorized_access():
     try:
-        response = requests.get(f"{BASE_URL}/notes/unauthorized_note_id?token=INVALID_TOKEN")
+        response = api.get("/notes/unauthorized_note_id", params={"token": "INVALID_TOKEN"})
         if response.status_code == 403: 
             log_result("TC030", "Yetkisiz erisim engellendi", True)
         else:
@@ -111,7 +110,7 @@ def test_unauthorized_access():
 # TC030: Guvenlik Gunluklerinin Dogrulanmasi
 def test_security_logs():
     try:
-        response = requests.get(f"{BASE_URL}/logs?token={TOKEN}")
+        response = api.get("/logs")
         if response.status_code == 200 and "failed_login_attempts" in response.json():
             log_result("TC031", "Guvenlik gunlukleri dogrulandi", True)
         else:
@@ -122,7 +121,7 @@ def test_security_logs():
 # TC031: Senkronizasyon Guvenligi
 def test_sync_security():
     try:
-        response = requests.post(f"{BASE_URL}/sync?token={TOKEN}")
+        response = api.post("/sync")
         if response.status_code == 200 and "encrypted" in response.text:
             log_result("TC031", "Senkronizasyon guvenligi dogrulandi", True)
         else:
@@ -133,7 +132,7 @@ def test_sync_security():
 # TC032: Dogrulama Mesaji
 def test_confirmation_message():
     try:
-        response = requests.delete(f"{BASE_URL}/notes/some_note_id?token={TOKEN}")
+        response = api.delete("/notes/some_note_id")
         if response.status_code == 200 and "Are you sure?" in response.text:
             log_result("TC033", "Dogrulama mesaji goruntulendi", True)
         else:

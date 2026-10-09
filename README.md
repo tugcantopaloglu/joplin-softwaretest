@@ -1,177 +1,67 @@
-# Joplin Test Project
+# Joplin Software Test Artifacts
 
-> **This document merges key information from the official Software Requirements Specification (SRS), Software Test Plan, and Software Test Report to provide a single, authoritative reference for the completed Joplin note‑taking application.**
+This repository collects a software testing study of [Joplin](https://github.com/laurent22/joplin), with requirements and test reports, Python API test scripts, and a JavaScript test excerpt. It does not contain the Joplin application or a standalone implementation of its desktop, mobile, sync, or encryption features.
 
----
+## Contents
 
-## Table of Contents
-1. [Project Overview](#project-overview)
-2. [Key Capabilities](#key-capabilities)
-   1. [Functional Requirements](#functional-requirements)
-   2. [Non‑Functional Requirements](#non-functional-requirements)
-3. [Architecture](#architecture)
-4. [Technology Stack](#technology-stack)
-5. [System & Hardware Requirements](#system--hardware-requirements)
-6. [Installation](#installation)
-7. [Usage Guide](#usage-guide)
-8. [Directory Structure](#directory-structure)
-9. [Quality Assurance](#quality-assurance)
-10. [License](#license)
-11. [Document References](#document-references)
+| Path | Purpose |
+| --- | --- |
+| [SRS.pdf](SRS.pdf) | Software requirements document |
+| [TestPlan.pdf](TestPlan.pdf) | Test plan |
+| [TestEndReport.pdf](TestEndReport.pdf) | Historical test report |
+| [codes/joplin_functional_tests.py](codes/joplin_functional_tests.py) | Sample API operations for notes and tags |
+| [codes/joplin_performance_tests.py](codes/joplin_performance_tests.py) | Sample API timing checks and local process measurements |
+| [codes/joplin_security_tests.py](codes/joplin_security_tests.py) | Historical security scenarios with unverified API assumptions |
+| [codes/CustomTest.test.js](codes/CustomTest.test.js) | Model tests that depend on Joplin source modules and fixtures absent from this repository |
+| [codes/joplin_api.py](codes/joplin_api.py) | Shared local API configuration and request boundary |
+| [codes/test_joplin_api.py](codes/test_joplin_api.py) | Offline configuration and mocked request regression tests |
 
----
+The existing scenario descriptions and reports include Turkish text. The PDFs are historical artifacts, not evidence that the current Joplin release passes every scenario.
 
-## Project Overview
+## Offline checks
 
-Joplin is an **open‑source**, cross‑platform note‑taking and to‑do application targeting personal and professional users. It delivers advanced features such as Markdown editing, tagging, full‑text search, end‑to‑end encryption, and seamless synchronisation across devices.
+Use Python 3.10 or newer. From the repository root, create a virtual environment and install the two packages imported by the scripts:
 
-The application was developed and released as part of a graduate software engineering project. All requirements are fully implemented and validated through an extensive multi‑level test campaign (see *Software Test Report*).
-
----
-
-## Key Capabilities
-
-### Functional Requirements
-
-| Category | Highlights |
-|----------|------------|
-| Note Management | Create, edit, delete, view, favourite, and encrypt notes with Markdown support |
-| Tag Management | Add / remove tags, filter notes by tags, group notes with multiple tags |
-| To‑Do Lists | Add tasks, set priorities, mark completion |
-| Synchronisation | Secure sync with Dropbox, OneDrive, WebDAV and offline mode with deferred sync |
-| Search & Filter | Full‑text search, date / tag filters, sort by creation or modification date |
-| Trash Management | Restore or permanently purge deleted notes |
-| Import / Export | Import notes from third‑party apps; export to Markdown, JSON, HTML |
-| Public API | OAuth‑secured REST API for CRUD operations and tag management |
-
-### Non‑Functional Requirements
-
-| Aspect | Target |
-|--------|--------|
-| **Performance** | 10 000 notes without performance loss; search results \< 1 s; app launch \< 3 s; sync \< 5 s |
-| **Reliability** | Encrypted data at rest; API access restricted to authorised users; robust against SQLi/XSS |
-| **Usability** | Intuitive UI, responsive dark/light themes, multi‑language support, keyboard shortcuts |
-| **Portability** | Native builds for Windows, macOS, Linux, Android, iOS |
-| **Resource Limits** | CPU \< 50 %; memory \< 100 MB during normal operation |
-
----
-
-## Architecture
-
-The system follows a modular layered design:
-
-* **Note Module** – CRUD for notes  
-* **Tag Module** – CRUD for tags and note‑tag associations  
-* **Sync Module** – Encrypted data synchronisation with cloud providers  
-* **Search Module** – Full‑text search index and query engine  
-
-All modules are exposed via a local REST API consumed by the Electron/React desktop client and the native mobile clients.
-
----
-
-## Technology Stack
-
-| Layer | Technology |
-|-------|------------|
-| Desktop Client | **React 18**, **Electron 28** |
-| Mobile Client | React Native 0.74 |
-| API | **Node.js 20** with Express |
-| Database | **SQLite 3.45** |
-| Tooling | Yarn, Jest, Playwright, Python (load & security tests) |
-
----
-
-## System & Hardware Requirements
-
-| Environment | Minimum |
-|-------------|---------|
-| Desktop | 4 GB RAM, dual‑core 2 GHz CPU, 500 MB free disk |
-| Mobile | iOS 13+ / Android 8+ with 200 MB free space |
-| Software | Node.js ≥ 14, Python ≥ 3.10 (for test automation) |
-
----
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/laurent22/joplin.git
-cd joplin
-
-# Install dependencies
-yarn install          # or npm install
-
-# Build & launch desktop app
-yarn start
+```powershell
+python -m venv .venv
+.venv\Scripts\python -m pip install requests psutil
+.venv\Scripts\python -m unittest discover -s codes -p "test_*.py" -v
 ```
 
-### Running the Test Suite
+The regression tests mock the HTTP session and process module imports. They check missing configuration, local origin restrictions, token encoding, redacted connection errors, and the request boundary used by each legacy script. They do not contact Joplin or validate application behavior. There is no application build or configured CI workflow in this repository. `CustomTest.test.js` cannot run on its own because its relative imports require a compatible Joplin source checkout.
 
-```bash
-# Python performance & security tests
-pip install -r tests/requirements.txt
-python tests/perf/load_test.py
-python tests/security/security_suite.py
+## Configuring the legacy API scripts
 
-# Unit & integration tests
-yarn test
+The scripts create, update, and delete data, may leave test notes behind, and include sync requests. Use a disposable local profile with sync disconnected. Review the individual scenarios before running them; the full security script also sleeps for 15 minutes.
+
+All three scripts require these environment variables before their first request:
+
+| Variable | Required value |
+| --- | --- |
+| `JOPLIN_API_URL` | Explicit HTTP or HTTPS loopback server origin, for example `http://127.0.0.1:41184` |
+| `JOPLIN_API_TOKEN` | API token supplied privately through the process environment |
+| `JOPLIN_TEST_PROFILE_ACKNOWLEDGED` | `1`, acknowledging that the target is a disposable local test profile |
+
+The [official Joplin Data API reference](https://joplinapp.org/help/api/references/rest_api/) describes the clipper service, its port, and API token configuration. It uses token query parameters. The shared client encodes those parameters, sets a 10 second request timeout, disables environment proxy configuration, refuses remote origins, and does not follow redirects. Configuration errors stop execution before an HTTP session is created; connection error messages omit credentials and request URLs.
+
+Once the token has been supplied privately to the current process environment, a PowerShell session can set the remaining configuration and invoke one script:
+
+```powershell
+$env:JOPLIN_API_URL = "http://127.0.0.1:41184"
+$env:JOPLIN_TEST_PROFILE_ACKNOWLEDGED = "1"
+.venv\Scripts\python codes/joplin_functional_tests.py
 ```
 
----
+The performance and security entry points are `codes/joplin_performance_tests.py` and `codes/joplin_security_tests.py`. Do not commit tokens or use a personal profile. A token previously embedded in the scripts has been removed from the current source; its owner should revoke or replace it because earlier Git history may retain it.
 
-## Usage Guide
+## Interpretation limits
 
-1. **Create a Note** – Click “New Note” and start composing in Markdown.  
-2. **Add Tags** – Use the side panel to assign existing or new tags.  
-3. **Set Up Sync** – Navigate to *Settings → Synchronisation* and choose a provider.  
-4. **Search** – Enter keywords in the search bar or apply filters.  
-5. **Export / Import** – Use *File → Export* to generate Markdown/JSON/HTML; reverse for import.  
+These scripts are examples that need review against the API version being studied. Several scenarios assume endpoints such as `/auth`, `/logs`, `/sync`, note export, or note restore, and fields such as `is_favorite`. The repository supplies no server implementation for those assumptions and does not establish their compatibility with Joplin.
 
----
+An API response containing an `encrypted` string does not establish encryption at rest or secure sync. Posting an XSS string and inspecting the response does not test how a client renders it. A `/ping` request measures an already running service's response, not application startup, and the mobile performance scenario sends a desktop API request without exercising a mobile device. Some scenarios use weak assertions and can report success for reasons unrelated to the stated requirement. Their printed pass/fail results should not be treated as a security audit or release acceptance result.
 
-## Directory Structure
+No current application performance figures, device results, complete requirements coverage, or resolved-defect claims are established by the files in this repository. Use the PDF reports as historical context and record the actual environment, API compatibility, and observed results for any new study.
 
-```
-.
-├── app/                 # Electron / React source
-├── api/                 # Node.js REST API
-├── database/            # SQLite schema & migrations
-├── mobile/              # React Native client
-├── tests/               # Jest (unit), Playwright (e2e), Python (perf/sec)
-└── docs/                # SRS, Test Plan, Test Report PDFs
-```
+## License
 
----
-
-## Quality Assurance
-
-### Test Strategy
-
-The project adopts the **V‑Model** with comprehensive unit, integration, system, acceptance, performance, security, and usability tests. The traceability matrix maps every requirement to at least one test case.
-
-* **Total Tests Executed:** 53  
-* **Passed:** 43  
-* **Failed:** 10 (all defects resolved in final build)
-
-#### Sample Metrics
-
-| Metric | Threshold | Result |
-|--------|-----------|--------|
-| Launch time | ≤ 3 s | 2.3 s |
-| Search latency | ≤ 1 s | 0.54 s |
-| Memory usage | ≤ 100 MB | 78 MB |
-| CPU usage | ≤ 50 % | 41 % |
-
-All benchmarks meet or exceed their targets in the release build.
-
----
-
-## Document References
-
-| Document | Version | Date |
-|----------|---------|------|
-| Software Requirements Specification | 1.0 | 02 Jan 2025 |
-| Software Test Plan | 1.0 | 02 Jan 2025 |
-| Software Test Report | 1.0 | 02 Jan 2025 |
-
-For complete details, refer to the corresponding PDF in the `docs/` directory.
+See [LICENSE](LICENSE). Joplin is an independent upstream project; its source and tests are subject to their upstream attribution and licensing requirements.
